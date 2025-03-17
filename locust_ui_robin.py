@@ -27,7 +27,7 @@ for i in range(1, 111):
     users.append(new_user)
 
 USER_CREDENTIALS = [(user["username"], user["password"]) for user in users]
-logging.info(users)
+
 
 CSV_FILE = "performance_data.csv"
 CSV_HEADER = ["Time", "User", "Component", "Load Time"]
@@ -48,7 +48,7 @@ class WebsiteTasks(SequentialTaskSet):
     def on_start(self):
         # Initialize WebDriver for each user
         chrome_options = Options()
-        # Uncomment for headless mode: chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
@@ -93,9 +93,34 @@ class WebsiteTasks(SequentialTaskSet):
         self.task_count += 1
         if self.task_count >= self.total_tasks:
             self.on_stop()
+    
     @task
     def order_page_component_(self):
         self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/order/Order/Default",cmpxpath="(//a[contains(@href,'/partner/s/order/801')])[1]",page="Order") 
+        self.task_count += 1
+        if self.task_count >= self.total_tasks:
+            self.on_stop()
+    
+    @task
+    def customer_page_component_(self):
+        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/customer-accounts",cmpxpath="//h3[text()='No results']",page="Order")     
+        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/customer-accounts",cmpxpath="(//a[contains(@href,'/partner/s/account/001')])[1]",page="Customer")  
+        self.task_count += 1
+        if self.task_count >= self.total_tasks:
+            self.on_stop()
+    
+    @task
+    def quote_page_component_(self):
+        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/quote/Quote/Default",cmpxpath="//h3[text()='No results']",page="Quotes")     
+        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/quote/Quote/Default",cmpxpath="(//a[contains(@href,'/partner/s/quote/0Q0')])[1]",page="Quotes")  
+        self.task_count += 1
+        if self.task_count >= self.total_tasks:
+            self.on_stop()
+
+    @task
+    def case_page_component_(self):
+        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/case/Case/Recent",cmpxpath="//h3[text()='No results']",page="Cases")     
+        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/case/Case/Recent",cmpxpath="(//a[contains(@href,'/partner/s/case/500')])[1]",page="Cases")  
         self.task_count += 1
         if self.task_count >= self.total_tasks:
             self.on_stop()
