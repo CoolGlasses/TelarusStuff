@@ -10,7 +10,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import random
 
-logging.basicConfig(filename="POC/locust_new.log",level=logging.INFO)
+logging.basicConfig(filename="locust_new.log",level=logging.INFO)
 
 USER_CREDENTIALS = [("plttest001@telarus.com","password-1"),
                     ("plttest002@telarus.com","password-1"),
