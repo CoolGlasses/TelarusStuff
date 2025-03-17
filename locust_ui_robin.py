@@ -13,7 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 users = []
-for i in range(1, 101):
+for i in range(1, 52):
     i_str = str(i)
     if len(i_str) == 1:
         formatted_i = "00" + i_str
