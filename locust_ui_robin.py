@@ -13,7 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 users = []
-for i in range(1, 502):
+for i in range(1, 111):
     i_str = str(i)
     if len(i_str) == 1:
         formatted_i = "00" + i_str
@@ -27,7 +27,7 @@ for i in range(1, 502):
     users.append(new_user)
 
 USER_CREDENTIALS = [(user["username"], user["password"]) for user in users]
-
+logging.info(users)
 
 CSV_FILE = "performance_data.csv"
 CSV_HEADER = ["Time", "User", "Component", "Load Time"]
@@ -59,7 +59,7 @@ class WebsiteTasks(SequentialTaskSet):
         self.username, self.password = USER_CREDENTIALS.pop(0)
         print(f"Spawning user: {self.username}, Remaining credentials: {len(USER_CREDENTIALS)}")
         self.task_count = 0
-        self.total_tasks = 50
+        self.total_tasks = 1000
         self.init_sele_driver(self.username, self.password)
 
     def init_sele_driver(self, username, password):
@@ -69,23 +69,50 @@ class WebsiteTasks(SequentialTaskSet):
         password_field = self.driver.find_element(By.XPATH,"//input[@placeholder='Enter your password']")
         lgnbtn = self.driver.find_element(By.XPATH,"//button[text()='Log in']")
         username_field.send_keys(username)
-        time.sleep(2)
+        time.sleep(1)
         password_field.send_keys(password)
-        time.sleep(2)
+        time.sleep(1)
         lgnbtn.click()
-        time.sleep(2)
+        time.sleep(1)
 
-    def measure_component_page_load_time(self, url, page, cmpxpath):
+    def measure_component_page_load_time(self, url,page, cmpxpath):
+        no_results_xpath = "//h3[text()='No results']"
         self.driver.get(url)
         start_time = time.time()
-        cmp = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.XPATH, cmpxpath)))
-        end_time = time.time()
-        load_time = end_time - start_time
-        if cmp.is_displayed():
-            current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            write_to_csv(current_time, self.username, page, f"{load_time:.2f}")
-            print(f"User: {self.username}, Component is visible for {page}, Load Time: {load_time:.2f}")
-            logging.info(f"User: {self.username}, Component is visible for {page}, Load Time: {load_time:.2f}")
+        # cmp = WebDriverWait(self.driver,30).until(EC.visibility_of_element_located((By.XPATH,""+cmpxpath+"")))
+        # end_time = time.time()
+        # load_time = end_time-start_time
+        # if cmp.is_displayed():
+        #     logging.info(f"{self.user_name} - Time to load {page} for , {load_time}")
+        try:
+            cmp = WebDriverWait(self.driver, 15).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.XPATH, no_results_xpath)),
+                    EC.presence_of_element_located((By.XPATH, cmpxpath))
+                )
+            )
+            end_time = time.time()
+            load_time = end_time - start_time
+
+            if cmp.is_displayed():
+                cmp_text = cmp.get_attribute("innerText").strip()
+                if "No results" in cmp_text:
+                    logging.info(f"{self.username} - Time to load {page}: {load_time:.2f} seconds")
+                    return
+                logging.info(f"{self.username} - Time to load {page}: {load_time:.2f} seconds")
+
+
+
+                # If "No results" is found, exit early to avoid unnecessary refresh
+                # if "No results" in cmp.text:
+                #     logging.info(f"{self.user_name} - No results found on {page}, skipping refresh")
+                #     return
+
+        except Exception as e:
+            logging.error(f"Error loading {page}: {e}")
+
+        print(f"User: {self.username}, Component is visible for {page}, Load Time: {load_time:.2f}")
+     
 
     @task
     def opportunity_page_component_(self):
@@ -93,7 +120,6 @@ class WebsiteTasks(SequentialTaskSet):
         self.task_count += 1
         if self.task_count >= self.total_tasks:
             self.on_stop()
-    
     @task
     def order_page_component_(self):
         self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/order/Order/Default",cmpxpath="(//a[contains(@href,'/partner/s/order/801')])[1]",page="Order") 
@@ -102,28 +128,13 @@ class WebsiteTasks(SequentialTaskSet):
             self.on_stop()
     
     @task
-    def customer_page_component_(self):
-        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/customer-accounts",cmpxpath="//h3[text()='No results']",page="Order")     
-        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/customer-accounts",cmpxpath="(//a[contains(@href,'/partner/s/account/001')])[1]",page="Customer")  
-        self.task_count += 1
-        if self.task_count >= self.total_tasks:
-            self.on_stop()
-    
-    @task
-    def quote_page_component_(self):
-        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/quote/Quote/Default",cmpxpath="//h3[text()='No results']",page="Quotes")     
-        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/quote/Quote/Default",cmpxpath="(//a[contains(@href,'/partner/s/quote/0Q0')])[1]",page="Quotes")  
-        self.task_count += 1
-        if self.task_count >= self.total_tasks:
-            self.on_stop()
-
-    @task
     def case_page_component_(self):
-        #self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/case/Case/Recent",cmpxpath="//h3[text()='No results']",page="Cases")     
-        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/case/Case/Recent",cmpxpath="(//a[contains(@href,'/partner/s/case/500')])[1]",page="Cases")  
-        self.task_count += 1
-        if self.task_count >= self.total_tasks:
-            self.on_stop()
+        no_results_xpath = "//h3[@class='avonni-illustration__title' and text()='No results']"
+        # self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/order/Order/Default",cmpxpath="//h3[text()='No results']",page="Order")
+        self.measure_component_page_load_time(
+            url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/case/Case/Default",page="Case",
+            cmpxpath=f"(//a[contains(@href,'/partner/s/case/500')])[1]|{no_results_xpath}")
+
 
     def on_stop(self):
         logging.info(f"Stopping user: {self.username}")
