@@ -29,18 +29,18 @@ for i in range(1, 1001):
 USER_CREDENTIALS = [(user["username"], user["password"]) for user in users]
 logging.info(users)
 
-CSV_FILE = "performance_data.csv"
-CSV_HEADER = ["Time", "User", "Component", "Load Time"]
-csv_lock = threading.Lock()
-
-def write_to_csv(current_time, user, component, load_time):
-    with csv_lock:
-        file_exists = os.path.isfile(CSV_FILE) and os.path.getsize(CSV_FILE) > 0
-        with open(CSV_FILE, "a", newline="") as file:
-            writer = csv.writer(file)
-            if not file_exists:
-                writer.writerow(CSV_HEADER)
-            writer.writerow([current_time, user, component, load_time])
+##CSV_FILE = "performance_data.csv"
+##CSV_HEADER = ["Time", "User", "Component", "Load Time"]
+##csv_lock = threading.Lock()
+##
+##def write_to_csv(current_time, user, component, load_time):
+##    with csv_lock:
+##        file_exists = os.path.isfile(CSV_FILE) and os.path.getsize(CSV_FILE) > 0
+##        with open(CSV_FILE, "a", newline="") as file:
+##            writer = csv.writer(file)
+##            if not file_exists:
+##                writer.writerow(CSV_HEADER)
+##            writer.writerow([current_time, user, component, load_time])
 
 
 class WebsiteTasks(SequentialTaskSet):
@@ -116,7 +116,7 @@ class WebsiteTasks(SequentialTaskSet):
 
     @task
     def opportunity_page_component_(self):
-        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/opportunity/Opportunity/Default",page="Oppurtunity",cmpxpath="(//a[contains(@href,'/partner/s/opportunity/006')])[1]")
+        self.measure_component_page_load_time(url="https://telarus--fullstagin.sandbox.my.site.com/partner/s/opportunity/Opportunity/Default",page="Opportunity",cmpxpath="(//a[contains(@href,'/partner/s/opportunity/006')])[1]")
         self.task_count += 1
         if self.task_count >= self.total_tasks:
             self.on_stop()
